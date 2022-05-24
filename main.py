@@ -32,5 +32,4 @@ def main():
     while True:
         hand1.draw()
 
-
 main()

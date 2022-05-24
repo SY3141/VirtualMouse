@@ -35,6 +35,9 @@ class Hand:
         self.rightDown = False
         self.mouseAction = "None"
 
+        self.thumbCoords = [0,0,0]
+        self.indexCoords = [0,0,0]
+
         self.mpHands = mp.solutions.hands
         self.hands = self.mpHands.Hands(False, 1, False, 0.5, 0.5) 
         self.mpDraw = mp.solutions.drawing_utils
@@ -61,6 +64,14 @@ class Hand:
         newQueue.append(point)
         return newQueue
     
+    def pinch(self, p1, p2):
+        xyDist = ((p1[0]-p1[1])**2 + (p2[0]-p2[1])**2) ** 0.5
+        dz = abs(p1[2] - p2[2])
+        print("xyDist: ", xyDist)
+        print("dz: ", dz)
+        #xyDist < 0.15 and 
+        return xyDist < 0.3 and dz < 0.08
+
     def overThresh(self,startCoords, endCoords):
         if abs(startCoords[0] - endCoords[0]) > self.moveThresh or abs(startCoords[1] - endCoords[1]) > self.moveThresh:
             return True
@@ -113,11 +124,12 @@ class Hand:
         cv2.circle(img, (inputX, inputY), 3, (255, 255, 0), -1)  # draws hand position
 
     def controlMouse(self):
-        if self.fingersRaised[1:5] == [1,1,1,1]:# if 4 fingers, thumb not included, are raised
+        #if self.fingersRaised[1:5] == [1,1,1,1]:# if 4 fingers, thumb not included, are raised
+        if self.pinch(self.thumbCoords, self.indexCoords):
             if self.leftDown == False:
                 self.mouse.press(Button.left)
                 self.leftDown = True
-                self.mouseAction = "Left"
+                self.mouseAction = "Pinch"
         else:
             if self.leftDown == True:
                 self.leftDown = False
@@ -165,7 +177,7 @@ class Hand:
         y_offset = 5  # vertical position offset for number label on finger landmarks
         if results.multi_hand_landmarks:
             for handLms in results.multi_hand_landmarks: #iterating through each hand
-                #self.mpDraw.draw_landmarks(img, handLms, self.mpHands.HAND_CONNECTIONS)
+                self.mpDraw.draw_landmarks(img, handLms, self.mpHands.HAND_CONNECTIONS)
                 for id, lm in enumerate(handLms.landmark):
                     if self.drawLabels:
                         cv2.putText(img, str(id), (int(lm.x * w), int(lm.y * h - y_offset)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
@@ -174,6 +186,10 @@ class Hand:
                             self.fingersRaised[id // 4 - 1] = 1
                         else:
                             self.fingersRaised[id // 4 - 1] = 0
+
+                self.indexCoords = [handLms.landmark[4].x, handLms.landmark[4].y, handLms.landmark[4].z]
+                self.thumb = [handLms.landmark[8].x, handLms.landmark[8].y, handLms.landmark[8].z]
+
                 self.mouseAcceleration(handLms, (w, h), img)
             if self.mouseRunning and self.inBounds:
                 self.controlMouse()
