@@ -90,7 +90,7 @@ class Hand:
         else:
             return False
 
-    def signedExp(self, base, exp):
+    def signedExp(self, base, exp): #exponentiation that preserves sign
         if base < 0:
             power = -(abs(base) ** exp)
         else:
