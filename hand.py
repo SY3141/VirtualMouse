@@ -72,17 +72,14 @@ class Hand:
         return newQueue
     
     def checkPinch(self, p1, p2, hand):
-        indexLen = self.dist(hand[7].x,hand[7].y,hand[6].x,hand[6].y)
-        thumbLen = self.dist(hand[4].x,hand[4].y,hand[3].x,hand[3].y)
-        print(round(indexLen,2), round(thumbLen,2))
-        #maxY = (indexLen + thumbLen) /2
-        maxY = 0.05
+        knuckleDist = self.dist(hand[5].x,hand[5].y,hand[1].x,hand[1].y)
+        maxY = round(knuckleDist/4,2)
         dx = abs(p1[0] - p2[0])
         dy = abs(p1[1] - p2[1])
         dz = abs(p1[2] - p2[2])
         #print(maxY)
         #print("xyz Dist: ", round(dx,2), round(dy,2), round(dz,2))
-        if dx < 0.02 and dy < maxY and dz < 0.02:
+        if dx < 0.02 and dy < maxY and dz < 0.025:
             self.pinch = True
         else:
             self.pinch = False
@@ -97,7 +94,7 @@ class Hand:
         if base < 0:
             power = -(abs(base) ** exp)
         else:
-            power = (abs(base) ** exp)
+            power = abs(base) ** exp
         return power
 
     def mouseAcceleration(self, handLms, camSize, img):
