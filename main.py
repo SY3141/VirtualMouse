@@ -18,7 +18,6 @@ def on_press(key):
             hand1.drawConnections = not hand1.drawConnections
         elif key.char == '4':
             hand1.drawLandmarks = not hand1.drawLandmarks
-
     except AttributeError:
         print('special key {0} pressed'.format(key))
 

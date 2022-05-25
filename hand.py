@@ -74,6 +74,7 @@ class Hand:
     def checkPinch(self, p1, p2, hand):
         indexLen = self.dist(hand[7].x,hand[7].y,hand[6].x,hand[6].y)
         thumbLen = self.dist(hand[4].x,hand[4].y,hand[3].x,hand[3].y)
+        print(round(indexLen,2), round(thumbLen,2))
         #maxY = (indexLen + thumbLen) /2
         maxY = 0.05
         dx = abs(p1[0] - p2[0])
