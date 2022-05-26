@@ -246,12 +246,12 @@ class VirtualMouse:
         self.pTime = cTime
 
         if self.showHud:
-            cv2.putText(img, avgFps, (10, 20), cv2.FONT_HERSHEY_SIMPLEX,
+            cv2.putText(img, avgFps, (10, 20), cv2.FONT_HERSHEY_COMPLEX,
                         0.5, (0, 255, 0), 2)  # displays fps
-            cv2.putText(img, self.mouseAction, (400, 20), cv2.FONT_HERSHEY_SIMPLEX,
+            cv2.putText(img, self.mouseAction, (400, 20), cv2.FONT_HERSHEY_COMPLEX ,
                         0.5, (0, 255, 0), 2)  # displays mouse action
             cv2.putText(img, "Fingers: " + str(self.fingersRaised), (400, 35),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)  # displays mouse action
+                        cv2.FONT_HERSHEY_COMPLEX, 0.5, (0, 255, 0), 2)  # displays mouse action
         # draws virtual mousepad area
             cv2.rectangle(img, self.boundStart, (
                 self.boundStart[0] + self.boundBox[0], self.boundStart[1] + self.boundBox[1]), (0, 0, 255), 2)
