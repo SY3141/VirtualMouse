@@ -6,7 +6,6 @@ from pynput.mouse import Button, Controller
 import win32api
 import win32con
 
-
 class VirtualMouse:
     def __init__(self, acceleration=1.4, sens=1.5, moveThresh=0, suppressShake=True, frameSample=3):
         self.drawLabels = False  # boolean: draws connections of the hand landmarks
@@ -44,6 +43,7 @@ class VirtualMouse:
 
         self.leftDown = False
         self.rightDown = False
+        self.middleDown = False
         self.pinched = False
         self.inBounds = False
 
@@ -168,7 +168,7 @@ class VirtualMouse:
                 self.mouse.press(Button.left)
                 self.leftDown = True
                 self.mouseAction = "Hold Left"
-        else:
+        else:    
             if self.leftDown == True:
                 self.leftDown = False
                 self.mouse.release(Button.left)
@@ -179,20 +179,31 @@ class VirtualMouse:
                 self.mouse.press(Button.right)
                 self.rightDown = True
                 self.mouseAction = "Hold Right"
-            else:
-                if self.rightDown == True:
-                    self.rightDown = False
-                    self.mouse.release(Button.right)
+        else:
+            if self.rightDown == True:
+                self.rightDown = False
+                self.mouse.release(Button.right)
+                self.mouseAction = "None"
             # index, middle and ring finger raised
+        if self.fingersRaised[1:4] == [1, 1, 1]:
+            if self.middleDown == False:
+                self.mouse.press(Button.middle)
+                self.middleDown = True
+                self.mouseAction = "Middle Down"
+        else:
+            if self.middleDown == True:
+                self.middleDown = False
+                self.mouse.release(Button.middle)
+                self.mouseAction = "None"
             '''
-            if self.fingersRaised[1:4] == [1, 1, 1]:
-                if self.handY <= self.display[1] / 2:
-                    scroll = int((self.display[1]/2 - self.handY)/100)
-                else:
-                    scroll = int(-(self.handY - self.display[1]/2)/100)
-                self.mouse.scroll(0, scroll)
+            if self.handY <= self.display[1] / 2:
+                scroll = int((self.display[1]/2 - self.handY)/100)
+            else:
+                scroll = int(-(self.handY - self.display[1]/2)/100)
+            self.mouse.scroll(0, scroll)
             '''
-            # index and middle finger raised
+        # index and middle finger raised
+        '''
         if self.leftDown == False and self.rightDown == False:
             if self.fingersRaised[1:3] == [1, 1]:
                 if (time.time() - self.lastClick) > self.clickThresh:
@@ -204,7 +215,7 @@ class VirtualMouse:
                     self.mouse.click(Button.left, 1)
                     self.mouseAction = "Left Click"
                     self.lastClick = time.time()
-
+        '''
     def draw(self):  # draws camera and UI
         success, img = self.cap.read()  # tuple of boolean success and image feed
         img = cv2.flip(img, 1)  # inverts camera feed
