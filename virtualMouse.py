@@ -7,30 +7,28 @@ import win32api
 import win32con
 
 class VirtualMouse:
-    def __init__(self, acceleration=1.4, sens=1.5, moveThresh=0, suppressShake=True, frameSample=3):
-        self.drawLabels = False  # boolean: draws connections of the hand landmarks
-        self.drawConnections = True
-        self.showHud = True
-        self.open = True
+    def __init__(self, acceleration=1.4, sens=1.5, moveThresh=0, frameSample=3):
+        self.drawLabels = False  # draws id numbers of the hand landmarks
+        self.drawConnections = True # draws lines connecting hand landmarks
+        self.showHud = True #draws the Heads Up Display
+        self.open = True #run condition of the program
 
-        self.acceleration = acceleration
-        self.sens = sens
-        self.moveThresh = moveThresh
-        self.suppressShake = suppressShake
+        self.acceleration = acceleration #mouse acceleration
+        self.sens = sens #mouse x and y sensitivity
+        self.moveThresh = moveThresh #threshold for mouse movement
 
         self.display = (1920, 1080)  # (1920,1080) resolution
         self.boundStart = (40, 40)  # (320,40) for halfscreen
         self.boundBox = (560, 350)  # (280,400)
 
-        self.tipIds = [4, 8, 12, 16, 20]
-        self.fingersRaised = [0, 0, 0, 0, 0]
-        self.pTime = 0
-
-        self.frameRate = [0 for i in range(5)]
+        #self.tipIds = [4, 8, 12, 16, 20]
+        self.fingersRaised = [0, 0, 0, 0, 0] #stores which fingers are raised
+        self.pTime = 0 #stores time that last frame started
+        self.frameRate = [0 for i in range(5)] #stores past 5 calculated frame times to average
         self.prevInput = (0, 0)
 
-        self.mouseCoords = (self.display[0]/2, self.display[1]/2)
-        self.lastPos = [(0, 0) for i in range(frameSample)]
+        self.mouseCoords = (self.display[0]/2, self.display[1]/2) #stores mouse coordinates on screen
+        self.lastPos = [(0, 0) for i in range(frameSample)] #stores mouse position of the past few frames
 
         self.mouse = Controller()
 
@@ -41,7 +39,6 @@ class VirtualMouse:
 
         self.mouseRunning = True
         self.mouseAction = "None"
-
         self.leftDown = False
         self.rightDown = False
         self.middleDown = False
