@@ -1,38 +1,45 @@
-from hand import Hand
+from virtualMouse import VirtualMouse
 from pynput.mouse import Button, Controller
 from pynput import keyboard
 import os
 
-hand1 = Hand()
+m1 = VirtualMouse()
 keySender = Controller()
 run = True
+
 
 def on_press(key):
     try:
         #print('alphanumeric key {0} pressed'.format(key.char))
         if key.char == '1':  # toggles pauses the program
-            hand1.mouseRunning = not hand1.mouseRunning
+            m1.mouseRunning = not m1.mouseRunning
         elif key.char == '2':
-            hand1.drawLabels = not hand1.drawLabels
+            m1.drawLabels = not m1.drawLabels
         elif key.char == '3':
-            hand1.drawConnections = not hand1.drawConnections
+            m1.drawConnections = not m1.drawConnections
         elif key.char == '4':
-            hand1.drawLandmarks = not hand1.drawLandmarks
+            m1.drawLandmarks = not m1.drawLandmarks
+        elif key.char == '5':
+            m1.showHud = not m1.showHud
     except AttributeError:
         print('special key {0} pressed'.format(key))
+
 
 def on_release(key):
     print('{0} released'.format(key))
     if key == keyboard.Key.esc:  # stops the program
         os._exit(0)
-        
+
+
 listener = keyboard.Listener(
     on_press=on_press,
     on_release=on_release)
 listener.start()
 
+
 def main():
     while True:
-        hand1.draw()
+        m1.draw()
+
 
 main()
