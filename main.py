@@ -14,12 +14,10 @@ def on_press(key):
         if key.char == '1':  # toggles pauses the program
             m1.mouseRunning = not m1.mouseRunning
         elif key.char == '2':
-            m1.drawLabels = not m1.drawLabels
+            m1.drawLabels = not m1.drawLabels1
         elif key.char == '3':
             m1.drawConnections = not m1.drawConnections
         elif key.char == '4':
-            m1.drawLandmarks = not m1.drawLandmarks
-        elif key.char == '5':
             m1.showHud = not m1.showHud
     except AttributeError:
         print('special key {0} pressed'.format(key))

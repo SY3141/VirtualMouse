@@ -10,7 +10,6 @@ class VirtualMouse:
     def __init__(self, acceleration=1.4, sens=1.5, moveThresh=0, suppressShake=True, frameSample=3):
         self.drawLabels = False  # boolean: draws connections of the hand landmarks
         self.drawConnections = True
-        self.drawLandmarks = True
         self.showHud = True
 
         self.acceleration = acceleration
