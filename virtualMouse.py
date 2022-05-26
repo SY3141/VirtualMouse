@@ -11,6 +11,7 @@ class VirtualMouse:
         self.drawLabels = False  # boolean: draws connections of the hand landmarks
         self.drawConnections = True
         self.showHud = True
+        self.open = True
 
         self.acceleration = acceleration
         self.sens = sens
@@ -124,18 +125,19 @@ class VirtualMouse:
     # translates hand motion to mouse movements
     def mouseAcceleration(self, handLms, camSize, img):
         inputX = int(
-            self.avg([handLms.landmark[item].x for item in [0, 9, 13]]) * camSize[0])
+            self.avg([handLms.landmark[item].x for item in [0, 9, 13]]) * camSize[0]) #x coord for center of palm
         inputY = int(
-            self.avg([handLms.landmark[item].y for item in [0, 9, 13]]) * camSize[1])
-        if (inputX > self.boundStart[0] and inputX < self.boundStart[0] + self.boundBox[0]
+            self.avg([handLms.landmark[item].y for item in [0, 9, 13]]) * camSize[1]) #y coord for center of palm
+        if (inputX > self.boundStart[0] and inputX < self.boundStart[0] + self.boundBox[0] #checks if center of palm is within bounding box
                 and inputY > self.boundStart[1] and inputY < self.boundStart[1] + self.boundBox[1]):
             self.inBounds = True
             moveX = self.signedExp(
-                (inputX - self.prevInput[0]) * self.sens, self.acceleration)
+                (inputX - self.prevInput[0]) * self.sens, self.acceleration) #scales mouse movement with mouse sensitivity and acceleration
             moveY = self.signedExp(
                 (inputY - self.prevInput[1]) * self.sens, self.acceleration)
-            mouseX = self.mouseCoords[0] + moveX
+            mouseX = self.mouseCoords[0] + moveX #changes mouse coords
             mouseY = self.mouseCoords[1] + moveY
+
             if mouseX > self.display[0]:
                 mouseX = self.display[0]
             if mouseX < 0:
@@ -144,6 +146,7 @@ class VirtualMouse:
                 mouseY = self.display[1]
             if mouseY < 0:
                 mouseY = 0
+
             self.mouseCoords = (mouseX, mouseY)
             self.lastPos = self.queue(self.lastPos, self.mouseCoords)
             avgPos = self.avgPos(self.lastPos)
@@ -233,7 +236,7 @@ class VirtualMouse:
                 for id, lm in enumerate(handLms.landmark):
                     if self.drawLabels:
                         cv2.putText(img, str(id), (int(
-                            lm.x * w), int(lm.y * h - y_offset)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+                            lm.x * w), int(lm.y * h - y_offset)), cv2.FONT_HERSHEY_COMPLEX, 0.5, (0, 0, 255), 2)
                     if id % 4 == 0 and id > 4:
                         if (lm.y - handLms.landmark[id - 3].y) < - 0.15:
                             self.fingersRaised[id // 4 - 1] = 1

@@ -26,7 +26,8 @@ def on_press(key):
 def on_release(key):
     print('{0} released'.format(key))
     if key == keyboard.Key.esc:  # stops the program
-        os._exit(0)
+        m1.open = False
+        #os._exit(0)
 
 
 listener = keyboard.Listener(
@@ -36,8 +37,7 @@ listener.start()
 
 
 def main():
-    while True:
+    while m1.open:
         m1.draw()
-
 
 main()
