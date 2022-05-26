@@ -33,10 +33,11 @@ class VirtualMouse:
         self.lastPos = [(0, 0) for i in range(frameSample)]
 
         self.mouse = Controller()
+
+        ''' removed clicks
         self.clickThresh = 0.5
         self.lastClick = 0
-        self.clickThresh = 0.2
-        self.lastClick = 0
+        '''
 
         self.mouseRunning = True
         self.mouseAction = "None"
@@ -216,6 +217,7 @@ class VirtualMouse:
                     self.mouseAction = "Left Click"
                     self.lastClick = time.time()
         '''
+    
     def draw(self):  # draws camera and UI
         success, img = self.cap.read()  # tuple of boolean success and image feed
         img = cv2.flip(img, 1)  # inverts camera feed
