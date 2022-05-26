@@ -3,6 +3,8 @@ import cv2
 import mediapipe as mp
 from numpy import newaxis
 from pynput.mouse import Button, Controller
+from pynput.keyboard import Controller as kb
+from pynput.keyboard import Key
 import win32api
 import win32con
 
@@ -31,6 +33,7 @@ class VirtualMouse:
         self.lastPos = [(0, 0) for i in range(frameSample)] #stores mouse position of the past few frames
 
         self.mouse = Controller()
+        self.keyboard = kb()
 
         ''' removed clicks
         self.clickThresh = 0.5
@@ -90,7 +93,7 @@ class VirtualMouse:
         # distance between knuckles to know scale of hand
         knuckleDist = self.dist(hand[5].x, hand[5].y, hand[1].x, hand[1].y)
         # changing Y distance threshold for pinch detection depending on hand size
-        maxY = round(knuckleDist/4, 2)
+        maxY = round(knuckleDist/5, 2)
         # prevents pinch detection while presenting closed fist
         if not self.inRange(hand[17].x, hand[2].x, [hand[4].x, hand[8].x]):
             dx = abs(p1[0] - p2[0])
@@ -187,13 +190,15 @@ class VirtualMouse:
             # index, middle and ring finger raised
         if self.fingersRaised[1:4] == [1, 1, 1]:
             if self.middleDown == False:
-                self.mouse.press(Button.middle)
+                self.keyboard.press(Key.backspace)
+                self.keyboard.release(Key.backspace)
+                #self.mouse.press(Button.middle)
                 self.middleDown = True
                 self.mouseAction = "Middle Down"
         else:
             if self.middleDown == True:
                 self.middleDown = False
-                self.mouse.release(Button.middle)
+                #self.mouse.release(Button.middle)
                 self.mouseAction = "None"
             '''
             if self.handY <= self.display[1] / 2:
