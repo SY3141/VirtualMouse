@@ -25,6 +25,51 @@ def avg(lst):  # finds average of a list
         return sum(lst) / len(lst)
 
 
+def queue(lst, point):  # queue data structure
+    newQueue = lst[1:]
+    newQueue.append(point)
+    return newQueue
+
+
+def dist(x1, y1, x2, y2):  # cartesian distance
+    dx = x1 - x2
+    dy = y1 - y2
+    return (dx**2 + dy**2) ** 0.5
+
+
+
+# checks if list of a target points is within 2 bounds
+def inRange(bound1, bound2, targets): 
+    inRange = False
+    for target in targets:
+        if bound1 < bound2 and target > bound1 and target < bound2:
+            inRange = True
+        elif bound2 < bound1 and target < bound1 and target > bound2:
+            inRange = True
+        else:
+            return False
+    return inRange
+
+
+def signedExp(base, exp):  # exponentiation that preserves sign
+    if base < 0:
+        power = -(abs(base) ** exp)
+    else:
+        power = abs(base) ** exp
+    return power
+# unused
+def secant(x1, y1, x2, y2):  # finds secant of 2 x,y coordinates
+    dy = y1-y2
+    dx = x1-x2
+    return dy/dx
+# checks if movement is significant enough to not be noise
+def overThresh(startCoords, endCoords):
+    if abs(startCoords[0] - endCoords[0]) > self.moveThresh or abs(startCoords[1] - endCoords[1]) > self.moveThresh:
+        return True
+    else:
+        return False
+
+
 class VirtualMouse:
     def __init__(self, acceleration=1.4, sens=1.5, moveThresh=0, frameSample=3, halfScreen=True):
 
@@ -42,7 +87,7 @@ class VirtualMouse:
         self.halfScreen = halfScreen
         self.setBound()
         self.display = (1920, 1080)  # (1920,1080) resolution
-        
+
         self.fingersRaised = [0, 0, 0, 0, 0]  # stores which fingers are raised
         self.prevfingersRaised = [self.fingersRaised * 3]
 
@@ -60,14 +105,13 @@ class VirtualMouse:
 
         self.mouse = Controller()
         self.mouseCoords = (self.display[0]/2, self.display[1]/2)
-        # stores mouse position of the past few frames
+        # stores mouse position in previous frames
         self.lastPos = [(0, 0) for i in range(frameSample)]
         self.mouseAction = "None"
         self.leftDown = False
         self.rightDown = False
         self.midDown = False
         self.inBounds = False
-
         self.pinched = False
         self.pinchConditions = ()
         self.prevPinch = [False for i in range(frameSample)]
@@ -85,60 +129,19 @@ class VirtualMouse:
             self.boundStart = (80, 40)
             self.boundBox = (520, 350)
 
-    def avgPos(self, lst):  # finds average position of a matrix of x,y positions
+    def avgPos(self,lst):  # finds average position of a matrix of x,y positions
         avgX = avg([x[0] for x in lst])
         avgY = avg([y[1] for y in lst])
         return [int(avgX), int(avgY)]
 
-    def secant(self, x1, y1, x2, y2):  # finds secant of 2 x,y coordinates
-        dy = y1-y2
-        dx = x1-x2
-        return dy/dx
-
-    def dist(self, x1, y1, x2, y2):  # cartesian distance
-        dx = x1 - x2
-        dy = y1 - y2
-        return (dx**2 + dy**2) ** 0.5
-
-    def queue(self, lst, point):  # queue data structure
-        newQueue = lst[1:]
-        newQueue.append(point)
-        return newQueue
-
-    # checks if list of a target points is within 2 bounds
-    def inRange(self, bound1, bound2, targets):
-        inRange = False
-        for target in targets:
-            if bound1 < bound2 and target > bound1 and target < bound2:
-                inRange = True
-            elif bound2 < bound1 and target < bound1 and target > bound2:
-                inRange = True
-            else:
-                return False
-        return inRange
-
-    # checks if movement is significant enough to not be noise
-    def overThresh(self, startCoords, endCoords):
-        if abs(startCoords[0] - endCoords[0]) > self.moveThresh or abs(startCoords[1] - endCoords[1]) > self.moveThresh:
-            return True
-        else:
-            return False
-
-    def signedExp(self, base, exp):  # exponentiation that preserves sign
-        if base < 0:
-            power = -(abs(base) ** exp)
-        else:
-            power = abs(base) ** exp
-        return power
-
     def checkPinch(self, p1, p2, hand):  # checks for pinches
         # distance between knuckles to know scale of hand
-        knuckleDist = self.dist(hand[5].x, hand[5].y, hand[1].x, hand[1].y)
+        knuckleDist = dist(hand[5].x, hand[5].y, hand[1].x, hand[1].y)
         # changing distance threshold for pinch detection depending on hand size
         maxY = round(knuckleDist/4.5, 2)
         maxX = round(knuckleDist/8, 2)
         # prevents pinch detection while presenting closed fist
-        if not self.inRange(hand[17].x, hand[3].x, [hand[4].x, hand[8].x]):
+        if not inRange(hand[17].x, hand[3].x, [hand[4].x, hand[8].x]):
             dx = abs(p1[0] - p2[0])
             dy = abs(p1[1] - p2[1])
             #dz = abs(p1[2] - p2[2])
@@ -146,7 +149,7 @@ class VirtualMouse:
             # print(maxY)
             #print("xyz Dist: ", round(dx,2), round(dy,2), round(dz,2))
             pinch = dx < maxX and dy < maxY  # and dz < 0.02
-            self.prevPinch = self.queue(self.prevPinch, pinch)
+            self.prevPinch = queue(self.prevPinch, pinch)
             if self.prevPinch == [True for i in range(self.frameSample)]:
                 self.pinched = True
             elif self.prevPinch == [False for i in range(self.frameSample)]:
@@ -162,9 +165,9 @@ class VirtualMouse:
         if (inputX > self.boundStart[0] and inputX < self.boundStart[0] + self.boundBox[0]  # checks if center of palm is within bounding box
                 and inputY > self.boundStart[1] and inputY < self.boundStart[1] + self.boundBox[1]):
             self.inBounds = True
-            moveX = self.signedExp(
+            moveX = signedExp(
                 (inputX - self.prevInput[0]) * self.sens, self.acceleration)  # scales mouse movement with mouse sensitivity and acceleration
-            moveY = self.signedExp(
+            moveY = signedExp(
                 (inputY - self.prevInput[1]) * self.sens, self.acceleration)
             mouseX = self.mouseCoords[0] + moveX  # changes mouse coords
             mouseY = self.mouseCoords[1] + moveY
@@ -179,7 +182,7 @@ class VirtualMouse:
                 mouseY = 0
             '''
             self.mouseCoords = (round(mouseX), round(mouseY))
-            self.lastPos = self.queue(self.lastPos, self.mouseCoords)
+            self.lastPos = queue(self.lastPos, self.mouseCoords)
             avgPos = self.avgPos(self.lastPos)
 
             if self.fingersRaised[1:5] != [1, 1, 1, 1]:
@@ -292,7 +295,7 @@ class VirtualMouse:
 
         cTime = time.time()
         curFps = round(1/(cTime - self.pTime))
-        self.frameRate = self.queue(self.frameRate, curFps)
+        self.frameRate = queue(self.frameRate, curFps)
         avgFps = "FPS: " + str(round(avg(self.frameRate)))
         self.pTime = cTime
 
