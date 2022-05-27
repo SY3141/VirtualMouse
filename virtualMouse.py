@@ -9,7 +9,7 @@
 # pip install mediapipe
 # pip install pynput
 # run main.py, not this file
- 
+
 import time
 import cv2
 import mediapipe as mp
@@ -25,11 +25,9 @@ def avg(lst):  # finds average of a list
         return sum(lst) / len(lst)
 
 
-
-
 class VirtualMouse:
     def __init__(self, acceleration=1.4, sens=1.5, moveThresh=0, frameSample=3, halfScreen=True):
-        
+
         self.drawLabels = False  # draws id numbers of the hand landmarks
         self.drawConnections = True  # draws lines connecting hand landmarks
         self.showHud = True  # draws the Heads Up Display
@@ -37,40 +35,33 @@ class VirtualMouse:
         self.open = True  # run condition of the program
 
         self.acceleration = acceleration  # mouse acceleration
-        self.sens = sens  # mouse x and y sensitivity 
+        self.sens = sens  # mouse x and y sensitivity
         # change sens to 1.5 for desk usage
         self.moveThresh = moveThresh  # threshold for mouse movement
         self.frameSample = frameSample
-
+        self.halfScreen = halfScreen
+        self.setBound()
         self.display = (1920, 1080)  # (1920,1080) resolution
-        self.boundStart = (80, 40)
-        self.boundBox = (520, 350)
-
-        if halfScreen:
-            self.boundStart = (320, 40)  # (320,40) for halfscreen
-            self.boundBox = (280, 350)  # (280,350) for halfscreen
-
+        
         self.fingersRaised = [0, 0, 0, 0, 0]  # stores which fingers are raised
         self.prevfingersRaised = [self.fingersRaised * 3]
 
-        self.pTime = 0  # stores time that last frame started
+        self.pTime = 0  # stores time when last frame started
         # stores past 5 calculated frame times to average
         self.frameRate = [0 for i in range(5)]
         self.prevInput = (0, 0)
 
-        # stores mouse coordinates on screen
+        self.keyboard = kb()
+
+        ''' removed clicks
+        self.clickThresh = 0.5
+        self.lastClick = 0
+        '''
+
         self.mouse = Controller()
         self.mouseCoords = (self.display[0]/2, self.display[1]/2)
         # stores mouse position of the past few frames
         self.lastPos = [(0, 0) for i in range(frameSample)]
-
-        self.keyboard = kb()
-
-        # ''' removed clicks
-        self.clickThresh = 0.5
-        self.lastClick = 0
-        # '''
-
         self.mouseAction = "None"
         self.leftDown = False
         self.rightDown = False
@@ -85,6 +76,14 @@ class VirtualMouse:
         self.hands = self.mpHands.Hands(False, 2, False, 0.5, 0.5)
         self.mpDraw = mp.solutions.drawing_utils
         self.cap = cv2.VideoCapture(0)
+
+    def setBound(self):
+        if self.halfScreen:
+            self.boundStart = (320, 40)  # (320,40) for halfscreen
+            self.boundBox = (280, 350)  # (280,350) for halfscreen
+        else:
+            self.boundStart = (80, 40)
+            self.boundBox = (520, 350)
 
     def avgPos(self, lst):  # finds average position of a matrix of x,y positions
         avgX = avg([x[0] for x in lst])

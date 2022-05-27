@@ -21,6 +21,9 @@ def on_press(key):
         elif key.char == '3':
             m1.drawConnections = not m1.drawConnections
         elif key.char == '4':
+            m1.halfScreen = not m1.halfScreen
+            m1.setBound()
+        elif key.char == '5':
             m1.showHud = not m1.showHud
     except AttributeError:
         print('special key {0} pressed'.format(key))
