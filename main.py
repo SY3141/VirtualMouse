@@ -1,10 +1,17 @@
+# Virtual Mouse
+# Created by Sunny Yao
+#
+# Program designed to replace mouse control with a camera.
+#
+# Installation Setup in README.md
+
 from virtualMouse import VirtualMouse
 from pynput import keyboard
 
 m1 = VirtualMouse()
 
 
-def on_press(key):
+def on_press(key): 
     try:
         #print('alphanumeric key {0} pressed'.format(key.char))
         if key.char == '1':  # toggles pauses the program
