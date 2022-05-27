@@ -1,11 +1,7 @@
 from virtualMouse import VirtualMouse
-from pynput.mouse import Button, Controller
 from pynput import keyboard
-import os
 
 m1 = VirtualMouse()
-keySender = Controller()
-run = True
 
 
 def on_press(key):
@@ -14,7 +10,7 @@ def on_press(key):
         if key.char == '1':  # toggles pauses the program
             m1.mouseRunning = not m1.mouseRunning
         elif key.char == '2':
-            m1.drawLabels = not m1.drawLabels1
+            m1.drawLabels = not m1.drawLabels
         elif key.char == '3':
             m1.drawConnections = not m1.drawConnections
         elif key.char == '4':
@@ -27,7 +23,6 @@ def on_release(key):
     print('{0} released'.format(key))
     if key == keyboard.Key.esc:  # stops the program
         m1.open = False
-        #os._exit(0)
 
 
 listener = keyboard.Listener(
