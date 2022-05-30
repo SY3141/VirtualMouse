@@ -72,12 +72,13 @@ def secant(x1, y1, x2, y2):
 
 class VirtualMouse:
     def __init__(self, acceleration=1.1, sens=2, moveThresh=0, frameSample=3, halfScreen=False):
+        '''UI'''
         self.drawLabels = False  # draws id numbers of the hand landmarks
         self.drawConnections = True  # draws lines connecting hand landmarks
         self.showHud = True  # draws the Heads Up Display
         self.mouseRunning = True  # pauses mouse output response
         self.open = True  # run condition of the program
-
+        '''Mouse speed and Virtual Mousepad Settings'''
         self.acceleration = acceleration  # mouse acceleration
         self.sens = sens  # mouse x and y sensitivity
         self.moveThresh = moveThresh  # threshold for mouse movement
@@ -86,22 +87,21 @@ class VirtualMouse:
         self.setBound()
         self.display = (1920, 1080)  # (1920,1080) resolution
 
+        '''Frame Rate'''
         self.pTime = 0  # stores time when last frame started
         # stores past 5 calculated frame times to average
         self.frameRate = [0 for i in range(5)]
-        self.prevInput = ()
-
-        self.scrollThresh = 0.5
-        self.lastScroll = 0
-
+        
+        '''Mouse Controls'''
         #self.keyboard = kb()
         self.mouse = Controller()
         self.mouseCoords = self.mouse.position
+        self.scrollThresh = 0.5
+        self.lastScroll = 0
         # stores mouse position in previous frames
         self.lastPos = [(0, 0) for i in range(frameSample)]
-
+        self.prevInput = ()
         self.fingersRaised = [0, 0, 0, 0, 0]  # stores which fingers are raised
-        #self.prevfingersRaised = [self.fingersRaised * 3]
         self.mouseAction = "None"
         self.leftDown = False
         self.rightDown = False
@@ -111,17 +111,17 @@ class VirtualMouse:
         self.pinchConditions = ()
         self.pinchSample = 3
         self.prevPinch = [False for i in range(self.pinchSample)]  # change to frameSample
-
         self.mouseOffset = False
         self.prevOffset = self.mouseOffset
 
+        '''Camera feed processing'''
         self.mpHands = mp.solutions.hands
         self.hands = self.mpHands.Hands(False, 2, False, 0.5, 0.5)
         self.mpDraw = mp.solutions.drawing_utils
         self.cap = cv2.VideoCapture(0)
 
     def setBound(self):
-        '''Sets virtual mouserpad bounds'''
+        '''Sets virtual mousepad bounds'''
         if self.halfScreen:
             self.boundStart = (320, 40)
             self.boundBox = (280, 350)
@@ -253,8 +253,8 @@ class VirtualMouse:
 
     def draw(self):  # draws camera and UI
         success, img = self.cap.read()  # tuple of boolean success and image feed
-        img = cv2.flip(img, 1)  # inverts camera feed
-        imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        img = cv2.flip(img, 1)  # inverts camera feed for front facing camera
+        imgRGB = img #cv2.cvtColor(img, cv2.COLOR_BGR2RGB) #Converts BGR image to RGB
         results = self.hands.process(imgRGB)
         h, w, c = img.shape
 
