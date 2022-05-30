@@ -19,6 +19,7 @@ from pynput.keyboard import Controller as kb
 import win32api
 import win32con
 
+from decimal import *
 
 def avg(lst):  # finds average of a list
     if len(lst) > 0:
@@ -62,16 +63,9 @@ def secant(x1, y1, x2, y2):  # finds secant of 2 x,y coordinates
     dy = y1-y2
     dx = x1-x2
     return dy/dx
-# checks if movement is significant enough to not be noise
-def overThresh(startCoords, endCoords):
-    if abs(startCoords[0] - endCoords[0]) > self.moveThresh or abs(startCoords[1] - endCoords[1]) > self.moveThresh:
-        return True
-    else:
-        return False
-
 
 class VirtualMouse:
-    def __init__(self, acceleration=1.4, sens=1.5, moveThresh=0, frameSample=3, halfScreen=True):
+    def __init__(self, acceleration=1.4, sens=1.5, moveThresh=0, frameSample=3, halfScreen=False):
 
         self.drawLabels = False  # draws id numbers of the hand landmarks
         self.drawConnections = True  # draws lines connecting hand landmarks
@@ -114,7 +108,8 @@ class VirtualMouse:
         self.inBounds = False
         self.pinched = False
         self.pinchConditions = ()
-        self.prevPinch = [False for i in range(frameSample)]
+        self.pinchSample = 1
+        self.prevPinch = [False for i in range(self.pinchSample)] #change to frameSample
 
         self.mpHands = mp.solutions.hands
         self.hands = self.mpHands.Hands(False, 2, False, 0.5, 0.5)
@@ -135,6 +130,8 @@ class VirtualMouse:
         return [int(avgX), int(avgY)]
 
     def checkPinch(self, p1, p2, hand):  # checks for pinches
+        
+
         # distance between knuckles to know scale of hand
         knuckleDist = dist(hand[5].x, hand[5].y, hand[1].x, hand[1].y)
         # changing distance threshold for pinch detection depending on hand size
@@ -150,11 +147,12 @@ class VirtualMouse:
             #print("xyz Dist: ", round(dx,2), round(dy,2), round(dz,2))
             pinch = dx < maxX and dy < maxY  # and dz < 0.02
             self.prevPinch = queue(self.prevPinch, pinch)
-            if self.prevPinch == [True for i in range(self.frameSample)]:
+            if self.prevPinch == [True for i in range(self.pinchSample)]:
                 self.pinched = True
-            elif self.prevPinch == [False for i in range(self.frameSample)]:
+            elif self.prevPinch == [False for i in range(self.pinchSample)]:
                 self.pinched = False
     # translates hand motion to mouse movements
+        
 
     def mouseAcceleration(self, handLms, camSize, img):
         inputX = int(
@@ -171,19 +169,11 @@ class VirtualMouse:
                 (inputY - self.prevInput[1]) * self.sens, self.acceleration)
             mouseX = self.mouseCoords[0] + moveX  # changes mouse coords
             mouseY = self.mouseCoords[1] + moveY
-            '''
-            if mouseX > self.display[0]:
-                mouseX = self.display[0]
-            if mouseX < 0:
-                mouseX = 0
-            if mouseY > self.display[1]:
-                mouseY = self.display[1]
-            if mouseY < 0:
-                mouseY = 0
-            '''
             self.mouseCoords = (round(mouseX), round(mouseY))
             self.lastPos = queue(self.lastPos, self.mouseCoords)
             avgPos = self.avgPos(self.lastPos)
+
+            
 
             if self.fingersRaised[1:5] != [1, 1, 1, 1]:
                 x = int(self.mouseCoords[0] - avgPos[0])
@@ -191,12 +181,11 @@ class VirtualMouse:
                 # necessary for centered mouse programs
                 win32api.mouse_event(win32con.MOUSEEVENTF_MOVE, x, y, 0, 0)
             self.prevInput = (inputX, inputY)
-
         else:
             self.inBounds = False
         # draws position of the center of the palm
         cv2.circle(img, (inputX, inputY), 3, (255, 255, 0), - 1)
-
+        
     def controlMouse(self):  # controls mouse functions
         if self.pinched:  # index and thumb pinched together
             if self.leftDown == False:
@@ -257,16 +246,20 @@ class VirtualMouse:
                     self.mouse.click(Button.left, 1)
                     self.mouseAction = "Left Click"
                     self.lastClick = time.time()
+
         '''
 
     def draw(self):  # draws camera and UI
+        stime = time.time()
         success, img = self.cap.read()  # tuple of boolean success and image feed
         img = cv2.flip(img, 1)  # inverts camera feed
         imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         results = self.hands.process(imgRGB)
         h, w, c = img.shape
-
+        
+        stime = time.time()
         y_offset = 5  # vertical position offset for number label on finger landmarks
+        
         if results.multi_hand_landmarks:
             for handLms in results.multi_hand_landmarks:  # iterating through each hand
                 if self.drawConnections:
@@ -299,6 +292,7 @@ class VirtualMouse:
         avgFps = "FPS: " + str(round(avg(self.frameRate)))
         self.pTime = cTime
 
+        
         if self.showHud:
             cv2.putText(img, "Pinch:" + str(self.pinchConditions), (100, 20), cv2.FONT_HERSHEY_COMPLEX,
                         0.4, (0, 100, 0), 2)  # displays pinch x and y conditions
@@ -313,5 +307,7 @@ class VirtualMouse:
         # draws virtual mousepad area
             cv2.rectangle(img, self.boundStart, (
                 self.boundStart[0] + self.boundBox[0], self.boundStart[1] + self.boundBox[1]), (0, 0, 255), 2)
+        
+
         cv2.imshow('Virtual Mouse', img)  # shows camera feed
         cv2.waitKey(1)  # waits for 1ms
