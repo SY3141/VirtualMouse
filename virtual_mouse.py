@@ -119,7 +119,9 @@ class VirtualMouse:
         self.mpHands = mp.solutions.hands
         self.hands = self.mpHands.Hands(False, 1, False, 0.5, 0.5)
         self.mpDraw = mp.solutions.drawing_utils
-        self.cap = cv2.VideoCapture(1)
+        self.cap = cv2.VideoCapture(0)
+
+        self.toggle = True
 
     def setBound(self):
         '''Sets virtual mousepad bounds'''
@@ -260,9 +262,14 @@ class VirtualMouse:
         img = cv2.flip(img, 1)  # inverts camera feed for front facing camera
         imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)# Converts BGR image to RGB
         results = self.hands.process(imgRGB)
+        
+
         h, w, c = img.shape
         y_offset = 5  # vertical position offset for number label on finger landmarks
         if results.multi_hand_landmarks:
+            if self.toggle:
+                print(results.multi_hand_landmarks)
+                self.toggle = False
             for handLms in results.multi_hand_landmarks:  # iterating through each hand
                 if self.drawConnections:
                     self.mpDraw.draw_landmarks(
