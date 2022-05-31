@@ -121,8 +121,6 @@ class VirtualMouse:
         self.mpDraw = mp.solutions.drawing_utils
         self.cap = cv2.VideoCapture(0)
 
-        self.toggle = True
-
     def setBound(self):
         '''Sets virtual mousepad bounds'''
         if self.halfScreen:
@@ -260,22 +258,18 @@ class VirtualMouse:
         '''Draws camera feed and UI'''
         success, img = self.cap.read()  # tuple of boolean success and image feed
         img = cv2.flip(img, 1)  # inverts camera feed for front facing camera
-        imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)# Converts BGR image to RGB
+        # Converts BGR image to RGB
+        imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         results = self.hands.process(imgRGB)
-        
 
         h, w, c = img.shape
         y_offset = 5  # vertical position offset for number label on finger landmarks
         if results.multi_hand_landmarks:
-            if self.toggle:
-                print(results.multi_hand_landmarks)
-                self.toggle = False
             for handLms in results.multi_hand_landmarks:  # iterating through each hand
                 if self.drawConnections:
                     self.mpDraw.draw_landmarks(
                         img, handLms, self.mpHands.HAND_CONNECTIONS)
-                handFlip = - \
-                    1 if handLms.landmark[0].y < handLms.landmark[9].y else 1
+                handFlip = -1 if handLms.landmark[0].y < handLms.landmark[9].y else 1 #checks if wrist is above or below the palm
                 for id, lm in enumerate(handLms.landmark):
                     if self.drawLabels:
                         cv2.putText(img, str(id), (int(
@@ -311,13 +305,13 @@ class VirtualMouse:
         if self.showHud:
             cv2.putText(img, "FPS: " + str(avgFps), (10, 20), cv2.FONT_HERSHEY_SIMPLEX,
                         size, color, 2)  # displays fps
-            cv2.putText(img, "Pinch:" + str(self.pinchConditions), (80, 20), cv2.FONT_HERSHEY_SIMPLEX,
+            cv2.putText(img, "Pinch:" + str(self.pinchConditions), (120, 20), cv2.FONT_HERSHEY_SIMPLEX,
                         size, color, 2)  # displays pinch x and y conditions
-            cv2.putText(img, "[X,Y] " + str(self.mouse.position), (250, 20),
+            cv2.putText(img, "[X,Y] " + str(self.mouse.position), (300, 20),
                         cv2.FONT_HERSHEY_SIMPLEX, size, color, 2)  # displays mouse position
-            cv2.putText(img, "Action: " + self.mouseAction, (400, 15), cv2.FONT_HERSHEY_SIMPLEX,
+            cv2.putText(img, "Action: " + self.mouseAction, (500, 20), cv2.FONT_HERSHEY_SIMPLEX,
                         size, color, 2)  # displays mouse action
-            cv2.putText(img, "Fingers: " + str(self.fingersRaised), (400, 30),
+            cv2.putText(img, "Fingers: " + str(self.fingersRaised), (220, 410),
                         cv2.FONT_HERSHEY_SIMPLEX, size, color, 2)  # displays fingers raised
             cv2.rectangle(img, self.boundStart, (
                 self.boundStart[0] + self.boundBox[0], self.boundStart[1] + self.boundBox[1]), (0, 0, 255), 1)  # draws virtual mousepad area
