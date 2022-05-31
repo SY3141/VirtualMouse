@@ -2,7 +2,7 @@
 Control a mouse using a camera and hand gestures
 
 Virtual Mouse
-Created by Sunny Yao
+Created by Sunny Y.
 
 Program designed to replace mouse control with a camera.
 
