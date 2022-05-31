@@ -5,7 +5,7 @@
 #
 # Installation Setup in README.md
 
-from virtualMouse import VirtualMouse
+from virtual_mouse import VirtualMouse
 from pynput import keyboard
 
 m1 = VirtualMouse()

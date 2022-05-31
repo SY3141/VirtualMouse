@@ -14,8 +14,8 @@ import time
 import cv2
 import mediapipe as mp
 from pynput.mouse import Button, Controller
-from pynput.keyboard import Key
-from pynput.keyboard import Controller as kb
+#from pynput.keyboard import Key
+#from pynput.keyboard import Controller as kb
 import win32api
 import win32con
 
@@ -63,7 +63,7 @@ def signedExp(base, exp):
 
 
 # unused
-def secant(x1, y1, x2, y2): 
+def secant(x1, y1, x2, y2):
     '''finds secant of 2 x,y coordinates.'''
     dy = y1-y2
     dx = x1-x2
@@ -91,7 +91,7 @@ class VirtualMouse:
         self.pTime = 0  # stores time when last frame started
         # stores past 5 calculated frame times to average
         self.frameRate = [0 for i in range(5)]
-        
+
         '''Mouse Controls'''
         #self.keyboard = kb()
         self.mouse = Controller()
@@ -110,15 +110,16 @@ class VirtualMouse:
         self.pinched = False
         self.pinchConditions = ()
         self.pinchSample = 3
-        self.prevPinch = [False for i in range(self.pinchSample)]  # change to frameSample
+        self.prevPinch = [False for i in range(
+            self.pinchSample)]  # change to frameSample
         self.mouseOffset = False
         self.prevOffset = self.mouseOffset
 
         '''Camera feed processing'''
         self.mpHands = mp.solutions.hands
-        self.hands = self.mpHands.Hands(False, 2, False, 0.5, 0.5)
+        self.hands = self.mpHands.Hands(False, 1, False, 0.5, 0.5)
         self.mpDraw = mp.solutions.drawing_utils
-        self.cap = cv2.VideoCapture(0)
+        self.cap = cv2.VideoCapture(1)
 
     def setBound(self):
         '''Sets virtual mousepad bounds'''
@@ -135,7 +136,7 @@ class VirtualMouse:
         avgY = avg([y[1] for y in lst])
         return [int(avgX), int(avgY)]
 
-    def checkPinch(self, p1, p2, hand):  
+    def checkPinch(self, p1, p2, hand):
         '''Checks for index and thumb pinches.'''
         # distance between knuckles to know scale of hand
         knuckleDist = dist(hand[5].x, hand[5].y, hand[1].x, hand[1].y)
@@ -149,29 +150,31 @@ class VirtualMouse:
             self.pinchConditions = (dx < maxX, dy < maxY)
             pinch = dx < maxX and dy < maxY
             self.prevPinch = queue(self.prevPinch, pinch)
+            # True * self.pinchSample
             if self.prevPinch == [True for i in range(self.pinchSample)]:
                 self.pinched = True
+            # False * self.pinchSample
             elif self.prevPinch == [False for i in range(self.pinchSample)]:
                 self.pinched = False
 
-    def mouseAcceleration(self, handLms, camSize, img):
+    def mouseAcceleration(self, handLms, camSize, handFlip):
         '''Translates hand motion to mouse movements.'''
         inputX = int(
             avg([handLms.landmark[item].x for item in [0, 9, 13]]) * camSize[0])
         inputY = int(
-        avg([handLms.landmark[item].y for item in [0, 9, 13]]) * camSize[1])
+            avg([handLms.landmark[item].y for item in [0, 9, 13]]) * camSize[1])
         if self.pinched:
             inputX = int(
-            avg([handLms.landmark[item].x for item in [4,8]]) * camSize[0]) #4 is thumb, 8 is index
+                avg([handLms.landmark[item].x for item in [4, 8]]) * camSize[0])  # 4 is thumb, 8 is index
             inputY = int(
-            avg([handLms.landmark[item].y for item in [4,8]]) * camSize[1])
+                avg([handLms.landmark[item].y for item in [4, 8]]) * camSize[1])
             self.mouseOffset = True
         else:
-            self.mouseOffset = False 
+            self.mouseOffset = False
         if self.mouseOffset != self.prevOffset:
-            self.prevInput = inputX,inputY
+            self.prevInput = inputX, inputY
         self.prevOffset = self.mouseOffset
-        
+
         xStart = self.boundStart[0]
         xEnd = self.boundStart[0] + self.boundBox[0]
         yStart = self.boundStart[1]
@@ -185,7 +188,7 @@ class VirtualMouse:
             moveX = int(
                 signedExp((inputX - self.prevInput[0]) * self.sens, self.acceleration))
             moveY = int(
-                signedExp((inputY - self.prevInput[1]) * self.sens, self.acceleration))
+                signedExp((inputY - self.prevInput[1]) * self.sens, self.acceleration) * handFlip)
             mouseX = self.mouseCoords[0] + moveX  # changes mouse coords
             mouseY = self.mouseCoords[1] + moveY
             self.mouseCoords = (mouseX, mouseY)
@@ -200,10 +203,10 @@ class VirtualMouse:
         else:
             self.inBounds = False
         # draws position of the center of the palm
-        cv2.circle(img, (inputX, inputY), 3, (255, 255, 0), - 1)
+        return inputX, inputY
 
     def controlMouse(self):
-        '''Controls mouse functions.'''
+        '''Controls mouse button functions.'''
         if self.pinched:  # index and thumb pinched together
             if self.leftDown == False:
                 self.leftDown = True
@@ -213,8 +216,8 @@ class VirtualMouse:
             self.leftDown = False
             self.mouse.release(Button.left)
             self.mouseAction = "None"
-        #Index and middle finger are raised
-        if self.fingersRaised[1:5] == [1, 1, 0, 0]:
+        # Index and middle finger are raised
+        elif self.fingersRaised[1:5] == [1, 1, 0, 0]:
             if self.rightDown == False:
                 self.rightDown = True
                 self.mouse.press(Button.right)
@@ -223,8 +226,8 @@ class VirtualMouse:
             self.rightDown = False
             self.mouse.release(Button.right)
             self.mouseAction = "None"
-        #Index, middle and ring finger raised
-        if self.fingersRaised[1:5] == [1, 1, 1, 0]:
+        # Index, middle and ring finger raised
+        elif self.fingersRaised[1:5] == [1, 1, 1, 0]:
             if self.midDown == False:
                 self.mouse.press(Button.middle)
                 self.midDown = True
@@ -251,31 +254,32 @@ class VirtualMouse:
             self.midDown = False
             self.mouseAction = "None"
 
-    def draw(self):  # draws camera and UI
+    def draw(self):
+        '''Draws camera feed and UI'''
         success, img = self.cap.read()  # tuple of boolean success and image feed
         img = cv2.flip(img, 1)  # inverts camera feed for front facing camera
-        imgRGB = img #cv2.cvtColor(img, cv2.COLOR_BGR2RGB) #Converts BGR image to RGB
+        imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)# Converts BGR image to RGB
         results = self.hands.process(imgRGB)
         h, w, c = img.shape
-
         y_offset = 5  # vertical position offset for number label on finger landmarks
-
         if results.multi_hand_landmarks:
             for handLms in results.multi_hand_landmarks:  # iterating through each hand
                 if self.drawConnections:
                     self.mpDraw.draw_landmarks(
                         img, handLms, self.mpHands.HAND_CONNECTIONS)
+                handFlip = - \
+                    1 if handLms.landmark[0].y < handLms.landmark[9].y else 1
                 for id, lm in enumerate(handLms.landmark):
                     if self.drawLabels:
                         cv2.putText(img, str(id), (int(
                             lm.x * w), int(lm.y * h - y_offset)), cv2.FONT_HERSHEY_COMPLEX, 0.5, (0, 0, 255), 2)
                     if id % 4 == 0 and id > 4:
-                        if (lm.y - handLms.landmark[id - 2].y) < 0:
+                        if (lm.y - handLms.landmark[id - 2].y) * handFlip < 0:
                             self.fingersRaised[id // 4 - 1] = 1
                         else:
                             self.fingersRaised[id // 4 - 1] = 0
                     elif id == 4:
-                        if (lm.x - handLms.landmark[2].x) < 0 and (lm.y - handLms.landmark[3].y) < 0:
+                        if (lm.x - handLms.landmark[3].x) < 0 and (lm.y - handLms.landmark[3].y)*handFlip < 0:
                             self.fingersRaised[0] = 1
                         else:
                             self.fingersRaised[0] = 0
@@ -284,33 +288,32 @@ class VirtualMouse:
                 thumbCoords = [handLms.landmark[8].x,
                                handLms.landmark[8].y, handLms.landmark[8].z]
                 self.checkPinch(thumbCoords, indexCoords, handLms.landmark)
-
                 if self.mouseRunning:
-                    self.mouseAcceleration(handLms, (w, h), img)
+                    cv2.circle(img, self.mouseAcceleration(
+                        handLms, (w, h), handFlip), 3, (255, 255, 0), - 1)
                     if self.inBounds:
                         self.controlMouse()
-
         cTime = time.time()
         curFps = round(1/(cTime - self.pTime))
         self.frameRate = queue(self.frameRate, curFps)
         avgFps = round(avg(self.frameRate))
         self.pTime = cTime
 
+        color = (255, 255, 255)
+        size = 0.5
         if self.showHud:
             cv2.putText(img, "FPS: " + str(avgFps), (10, 20), cv2.FONT_HERSHEY_SIMPLEX,
-                        0.4, (0, 100, 0), 2)  # displays fps
-            cv2.putText(img, "Pinch:" + str(self.pinchConditions), (100, 20), cv2.FONT_HERSHEY_SIMPLEX,
-                        0.4, (0, 100, 0), 2)  # displays pinch x and y conditions
+                        size, color, 2)  # displays fps
+            cv2.putText(img, "Pinch:" + str(self.pinchConditions), (80, 20), cv2.FONT_HERSHEY_SIMPLEX,
+                        size, color, 2)  # displays pinch x and y conditions
             cv2.putText(img, "[X,Y] " + str(self.mouse.position), (250, 20),
-                        cv2.FONT_HERSHEY_COMPLEX, 0.4, (0, 100, 0), 2)  # displays mouse position
+                        cv2.FONT_HERSHEY_SIMPLEX, size, color, 2)  # displays mouse position
             cv2.putText(img, "Action: " + self.mouseAction, (400, 15), cv2.FONT_HERSHEY_SIMPLEX,
-                        0.4, (0, 100, 0), 2)  # displays mouse action
+                        size, color, 2)  # displays mouse action
             cv2.putText(img, "Fingers: " + str(self.fingersRaised), (400, 30),
-                        cv2.FONT_HERSHEY_COMPLEX, 0.4, (0, 100, 0), 2)  # displays fingers raised
-
-        # draws virtual mousepad area
+                        cv2.FONT_HERSHEY_SIMPLEX, size, color, 2)  # displays fingers raised
             cv2.rectangle(img, self.boundStart, (
-                self.boundStart[0] + self.boundBox[0], self.boundStart[1] + self.boundBox[1]), (0, 0, 255), 1)
+                self.boundStart[0] + self.boundBox[0], self.boundStart[1] + self.boundBox[1]), (0, 0, 255), 1)  # draws virtual mousepad area
 
         cv2.imshow('Virtual Mouse', img)  # shows camera feed
         cv2.waitKey(1)  # waits for 1ms
