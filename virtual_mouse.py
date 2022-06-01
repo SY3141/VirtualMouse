@@ -18,7 +18,7 @@ from pynput.mouse import Button, Controller
 #from pynput.keyboard import Controller as kb
 import win32api
 import win32con
-
+import win32gui
 
 def avg(lst):
     '''Returns average of a list.'''
@@ -85,7 +85,7 @@ class VirtualMouse:
         self.frameSample = frameSample
         self.halfScreen = halfScreen
         self.setBound()
-        self.display = (1920, 1080)  # (1920,1080) resolution
+        self.display = (1536, 864)  #resolution
 
         '''Frame Rate'''
         self.pTime = 0  # stores time when last frame started
@@ -109,7 +109,7 @@ class VirtualMouse:
         self.inBounds = False
         self.pinched = False
         self.pinchConditions = ()
-        self.pinchSample = 3
+        self.pinchSample = 1
         self.prevPinch = [False for i in range(
             self.pinchSample)]  # change to frameSample
         self.mouseOffset = False
@@ -317,4 +317,11 @@ class VirtualMouse:
                 self.boundStart[0] + self.boundBox[0], self.boundStart[1] + self.boundBox[1]), (0, 0, 255), 1)  # draws virtual mousepad area
 
         cv2.imshow('Virtual Mouse', img)  # shows camera feed
+        cv2.moveWindow('Virtual Mouse',self.display[0]- w,self.display[1] - h-80)
+        #cv2.resizeWindow('Virtual Mouse', 200, 200)
+        hWnd = win32gui.FindWindow(None, 'Virtual Mouse')
+        win32gui.SetWindowPos(hWnd, win32con.HWND_TOPMOST, 0, 0, 0, 0,
+        win32con.SWP_SHOWWINDOW | win32con.SWP_NOSIZE | win32con.SWP_NOMOVE)
+
+
         cv2.waitKey(1)  # waits for 1ms
