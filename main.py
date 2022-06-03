@@ -40,7 +40,6 @@ listener = keyboard.Listener(
     on_release=on_release)
 listener.start()
 
-
 def main():
     while m1.open:
         m1.draw()

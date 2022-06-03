@@ -14,11 +14,10 @@ import time
 import cv2
 import mediapipe as mp
 from pynput.mouse import Button, Controller
-#from pynput.keyboard import Key
-#from pynput.keyboard import Controller as kb
 import win32api
 import win32con
 import win32gui
+
 
 def avg(lst):
     '''Returns average of a list.'''
@@ -62,14 +61,6 @@ def signedExp(base, exp):
     return power
 
 
-# unused
-def secant(x1, y1, x2, y2):
-    '''finds secant of 2 x,y coordinates.'''
-    dy = y1-y2
-    dx = x1-x2
-    return dy/dx
-
-
 class VirtualMouse:
     def __init__(self, acceleration=1.1, sens=2, moveThresh=0, frameSample=3, halfScreen=False):
         '''UI'''
@@ -85,15 +76,12 @@ class VirtualMouse:
         self.frameSample = frameSample
         self.halfScreen = halfScreen
         self.setBound()
-        self.display = (1536, 864)  #resolution
-
+        self.display = (1536, 864)  # resolution
         '''Frame Rate'''
         self.pTime = 0  # stores time when last frame started
         # stores past 5 calculated frame times to average
         self.frameRate = [0 for i in range(5)]
-
         '''Mouse Controls'''
-        #self.keyboard = kb()
         self.mouse = Controller()
         self.mouseCoords = self.mouse.position
         self.scrollThresh = 0.5
@@ -109,12 +97,11 @@ class VirtualMouse:
         self.inBounds = False
         self.pinched = False
         self.pinchConditions = ()
-        self.pinchSample = 1
+        self.pinchSample = 3
         self.prevPinch = [False for i in range(
-            self.pinchSample)]  # change to frameSample
+            self.pinchSample)]
         self.mouseOffset = False
         self.prevOffset = self.mouseOffset
-
         '''Camera feed processing'''
         self.mpHands = mp.solutions.hands
         self.hands = self.mpHands.Hands(False, 1, False, 0.5, 0.5)
@@ -150,10 +137,8 @@ class VirtualMouse:
             self.pinchConditions = (dx < maxX, dy < maxY)
             pinch = dx < maxX and dy < maxY
             self.prevPinch = queue(self.prevPinch, pinch)
-            # True * self.pinchSample
             if self.prevPinch == [True for i in range(self.pinchSample)]:
                 self.pinched = True
-            # False * self.pinchSample
             elif self.prevPinch == [False for i in range(self.pinchSample)]:
                 self.pinched = False
 
@@ -232,23 +217,6 @@ class VirtualMouse:
                 self.mouse.press(Button.middle)
                 self.midDown = True
                 self.mouseAction = "Mid"
-                '''
-                if (time.time() - self.lastClick) > self.clickThresh:#
-                    self.keyboard.press(Key.backspace)
-                    self.keyboard.release(Key.backspace)
-                    self.lastClick = time.time() #
-                '''
-            '''
-            if self.mouse.position[1] <= self.display[1] / 2:
-                scroll = int((self.display[1]/2 - self.mouse.position[1])/200)
-            else:
-                scroll = int(-(self.mouse.position[1] - self.display[1])/200)
-            print("scroll: ", scroll)
-            if (time.time() - self.lastScroll) > self.scrollThresh:#
-                scroll = 1
-                self.mouse.scroll(0, scroll)
-                self.lastScroll = time.time()
-                '''
         elif self.midDown == True:
             self.mouse.release(Button.middle)
             self.midDown = False
@@ -256,12 +224,11 @@ class VirtualMouse:
 
     def draw(self):
         '''Draws camera feed and UI'''
-        success, img = self.cap.read()  # tuple of boolean success and image feed
+        s, img = self.cap.read()  # tuple of boolean success and image feed
         img = cv2.flip(img, 1)  # inverts camera feed for front facing camera
         # Converts BGR image to RGB
         imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         results = self.hands.process(imgRGB)
-
         h, w, c = img.shape
         y_offset = 5  # vertical position offset for number label on finger landmarks
         if results.multi_hand_landmarks:
@@ -269,17 +236,20 @@ class VirtualMouse:
                 if self.drawConnections:
                     self.mpDraw.draw_landmarks(
                         img, handLms, self.mpHands.HAND_CONNECTIONS)
-                handFlip = -1 if handLms.landmark[0].y < handLms.landmark[9].y else 1 #checks if wrist is above or below the palm
+                # checks if wrist is above or below the palm
+                handFlip = - \
+                    1 if handLms.landmark[0].y < handLms.landmark[9].y else 1
                 for id, lm in enumerate(handLms.landmark):
                     if self.drawLabels:
                         cv2.putText(img, str(id), (int(
                             lm.x * w), int(lm.y * h - y_offset)), cv2.FONT_HERSHEY_COMPLEX, 0.5, (0, 0, 255), 2)
-                    if id % 4 == 0 and id > 4:
+                    if id % 4 == 0 and id > 4:  # index to pinky tip landmarks
+                        # compares fingertip y position to medial phalange y position
                         if (lm.y - handLms.landmark[id - 2].y) * handFlip < 0:
                             self.fingersRaised[id // 4 - 1] = 1
                         else:
                             self.fingersRaised[id // 4 - 1] = 0
-                    elif id == 4:
+                    elif id == 4:  # thumb raised detection compares x position as well as y position
                         if (lm.x - handLms.landmark[3].x) < 0 and (lm.y - handLms.landmark[3].y)*handFlip < 0:
                             self.fingersRaised[0] = 1
                         else:
@@ -299,9 +269,8 @@ class VirtualMouse:
         self.frameRate = queue(self.frameRate, curFps)
         avgFps = round(avg(self.frameRate))
         self.pTime = cTime
-
-        color = (255, 255, 255)
-        size = 0.5
+        color = (255, 255, 255)  # text color
+        size = 0.5  # text font size relative to default size
         if self.showHud:
             cv2.putText(img, "FPS: " + str(avgFps), (10, 20), cv2.FONT_HERSHEY_SIMPLEX,
                         size, color, 2)  # displays fps
@@ -317,11 +286,10 @@ class VirtualMouse:
                 self.boundStart[0] + self.boundBox[0], self.boundStart[1] + self.boundBox[1]), (0, 0, 255), 1)  # draws virtual mousepad area
 
         cv2.imshow('Virtual Mouse', img)  # shows camera feed
-        cv2.moveWindow('Virtual Mouse',self.display[0]- w,self.display[1] - h-80)
+        cv2.moveWindow('Virtual Mouse',
+                       self.display[0] - w, self.display[1] - h-80)
         #cv2.resizeWindow('Virtual Mouse', 200, 200)
         hWnd = win32gui.FindWindow(None, 'Virtual Mouse')
         win32gui.SetWindowPos(hWnd, win32con.HWND_TOPMOST, 0, 0, 0, 0,
-        win32con.SWP_SHOWWINDOW | win32con.SWP_NOSIZE | win32con.SWP_NOMOVE)
-
-
+                              win32con.SWP_SHOWWINDOW | win32con.SWP_NOSIZE | win32con.SWP_NOMOVE)
         cv2.waitKey(1)  # waits for 1ms
