@@ -97,9 +97,8 @@ class VirtualMouse:
         self.inBounds = False
         self.pinched = False
         self.pinchConditions = ()
-        self.pinchSample = 3
-        self.prevPinch = [False for i in range(
-            self.pinchSample)]
+        self.pinchSample = 4
+        self.prevPinch = [False] * self.pinchSample
         self.mouseOffset = False
         self.prevOffset = self.mouseOffset
         '''Camera feed processing'''
