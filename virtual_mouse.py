@@ -1,5 +1,5 @@
 # Virtual Mouse
-# Created by Sunny Yao
+# Created by Sunny Y.
 #
 # Program designed to replace mouse control with a camera.
 #
