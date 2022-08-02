@@ -20,6 +20,7 @@ Program designed to replace mouse control with a camera.
 -run main.py
 
 **Usage Keys**
+
 "1" toggles mouse control on/off
 
 "2" toggles landmark numerical labelling for developer testing
