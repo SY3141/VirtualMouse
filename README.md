@@ -1,4 +1,5 @@
-# Hand-Tracker
+# Virtual Mouse
+
 Control a mouse using a camera and hand gestures
 
 Virtual Mouse
