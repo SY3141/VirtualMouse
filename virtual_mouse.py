@@ -1,5 +1,5 @@
 # Virtual Mouse
-# Created by Sunny Yao
+# Created by Sunny Y.
 #
 # Program designed to replace mouse control with a camera.
 #
@@ -69,13 +69,15 @@ class VirtualMouse:
         self.showHud = True  # draws the Heads Up Display
         self.mouseRunning = True  # pauses mouse output response
         self.open = True  # run condition of the program
+        self.hideCam = False
         '''Mouse speed and Virtual Mousepad Settings'''
         self.acceleration = acceleration  # mouse acceleration
         self.sens = sens  # mouse x and y sensitivity
         self.moveThresh = moveThresh  # threshold for mouse movement
         self.frameSample = frameSample
         self.halfScreen = halfScreen
-        self.setBound()
+        
+
         self.display = (1536, 864)  # resolution
         '''Frame Rate'''
         self.pTime = 0  # stores time when last frame started
@@ -101,20 +103,26 @@ class VirtualMouse:
         self.prevPinch = [False] * self.pinchSample
         self.mouseOffset = False
         self.prevOffset = self.mouseOffset
+        
         '''Camera feed processing'''
         self.mpHands = mp.solutions.hands
         self.hands = self.mpHands.Hands(False, 1, False, 0.5, 0.5)
         self.mpDraw = mp.solutions.drawing_utils
         self.cap = cv2.VideoCapture(0)
+        self.setBound()
 
     def setBound(self):
         '''Sets virtual mousepad bounds'''
         if self.halfScreen:
             self.boundStart = (320, 40)
             self.boundBox = (280, 350)
+            num_hands = 2
         else:
             self.boundStart = (40, 40)
             self.boundBox = (560, 350)
+            num_hands = 1
+
+        self.hands = self.mpHands.Hands(False, num_hands, False, 0.5, 0.5)
 
     def avgPos(self, lst):
         '''Finds average position from a matrix of x,y positions and returns a tuple.'''
@@ -236,8 +244,7 @@ class VirtualMouse:
                     self.mpDraw.draw_landmarks(
                         img, handLms, self.mpHands.HAND_CONNECTIONS)
                 # checks if wrist is above or below the palm
-                handFlip = - \
-                    1 if handLms.landmark[0].y < handLms.landmark[9].y else 1
+                handFlip = -1 if handLms.landmark[0].y < handLms.landmark[9].y else 1
                 for id, lm in enumerate(handLms.landmark):
                     if self.drawLabels:
                         cv2.putText(img, str(id), (int(
@@ -284,11 +291,21 @@ class VirtualMouse:
             cv2.rectangle(img, self.boundStart, (
                 self.boundStart[0] + self.boundBox[0], self.boundStart[1] + self.boundBox[1]), (0, 0, 255), 1)  # draws virtual mousepad area
 
+        
         cv2.imshow('Virtual Mouse', img)  # shows camera feed
-        cv2.moveWindow('Virtual Mouse',
-                       self.display[0] - w, self.display[1] - h-80)
-        #cv2.resizeWindow('Virtual Mouse', 200, 200)
+
+        if self.hideCam:
+            cv2.resizeWindow('Virtual Mouse', 0, 0)
+            cv2.moveWindow('Virtual Mouse',
+            self.display[0], self.display[1])
+        else:
+            cv2.resizeWindow('Virtual Mouse', w, h)
+            cv2.moveWindow('Virtual Mouse',
+            self.display[0] - w, self.display[1] - h - 80)
+
+
         hWnd = win32gui.FindWindow(None, 'Virtual Mouse')
         win32gui.SetWindowPos(hWnd, win32con.HWND_TOPMOST, 0, 0, 0, 0,
-                              win32con.SWP_SHOWWINDOW | win32con.SWP_NOSIZE | win32con.SWP_NOMOVE)
+                            win32con.SWP_SHOWWINDOW | win32con.SWP_NOSIZE | win32con.SWP_NOMOVE)
+        
         cv2.waitKey(1)  # waits for 1ms

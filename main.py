@@ -1,5 +1,5 @@
 # Virtual Mouse
-# Created by Sunny Yao
+# Created by Sunny Y.
 #
 # Program designed to replace mouse control with a camera.
 #
@@ -25,6 +25,10 @@ def on_press(key):
             m1.setBound()
         elif key.char == '5':
             m1.showHud = not m1.showHud
+        elif key.char == '6':
+            m1.hideCam = not m1.hideCam
+
+        
     except AttributeError:
         print('special key {0} pressed'.format(key))
 
