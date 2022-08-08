@@ -248,7 +248,7 @@ class VirtualMouse:
                 for id, lm in enumerate(handLms.landmark):
                     if self.drawLabels:
                         cv2.putText(img, str(id), (int(
-                            lm.x * w), int(lm.y * h - y_offset)), cv2.FONT_HERSHEY_COMPLEX, 0.5, (0, 0, 255), 2)
+                            lm.x * w), int(lm.y * h - y_offset)), cv2.FONT_HERSHEY_COMPLEX, 0.5, (0, 255, 0), 2)
                     if id % 4 == 0 and id > 4:  # index to pinky tip landmarks
                         # compares fingertip y position to medial phalange y position
                         if (lm.y - handLms.landmark[id - 2].y) * handFlip < 0:
