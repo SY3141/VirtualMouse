@@ -231,12 +231,12 @@ class VirtualMouse:
 
     def draw(self):
         '''Draws camera feed and UI'''
-        s, img = self.cap.read()  # tuple of boolean success and image feed
+        _, img = self.cap.read()  # tuple of boolean success and image feed
         img = cv2.flip(img, 1)  # inverts camera feed for front facing camera
         # Converts BGR image to RGB
         imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         results = self.hands.process(imgRGB)
-        h, w, c = img.shape
+        h, w,_ = img.shape
         y_offset = 5  # vertical position offset for number label on finger landmarks
         if results.multi_hand_landmarks:
             for handLms in results.multi_hand_landmarks:  # iterating through each hand
