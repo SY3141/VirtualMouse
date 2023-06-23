@@ -9,15 +9,15 @@ Program designed to replace mouse control with a camera.
 
 **Installation Setup**
 
--Python 3.9+
+Install Python 3.9+
 
--pip install opencv-python
+`pip install opencv-python
 
--pip install mediapipe
+`pip install mediapipe
 
--pip install pynput
+`pip install pynput
 
--run main.py
+Run main.py
 
 **Usage Keys**
 
