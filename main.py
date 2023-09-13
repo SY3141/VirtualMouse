@@ -35,7 +35,7 @@ def on_press(key):
 
 def on_release(key):
     print('{0} released'.format(key))
-    if key == keyboard.Key.esc:  # stops the program
+    if key == keyboard.Key.tab:  # stops the program
         m1.open = False
 
 
