@@ -37,7 +37,7 @@ Run main.py
 
 "6" toggles the camera feed window on/off
 
-"esc" Exits the program
+"Tab" Exits the program
 
 **Webcam usage**
 
