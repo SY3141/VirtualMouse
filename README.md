@@ -17,6 +17,8 @@ pip install opencv-python
 pip install mediapipe
 
 pip install pynput
+
+pip install pypiwin32
 ```
 
 Run main.py
