@@ -11,19 +11,14 @@ Program designed to replace mouse control with a camera.
 
 Install Python 3.9+
 
+In CLI, install requirements
 ```
-pip install opencv-python
-
-pip install mediapipe
-
-pip install pynput
-
-pip install pypiwin32
+pip install -r requirements.txt
 ```
 
 Run main.py
 
-**Usage Keys**
+**Keybinds**
 
 "1" toggles mouse control on/off
 
