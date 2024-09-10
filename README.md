@@ -9,14 +9,14 @@ Program designed to replace mouse control with a camera.
 
 **Installation Setup**
 
-Install Python 3.9+
+1. Install Python 3.9+
 
-In CLI, install requirements
+2. In CLI, install requirements
 ```
 pip install -r requirements.txt
 ```
 
-Run main.py
+3. Run main.py
 
 **Keybinds**
 
